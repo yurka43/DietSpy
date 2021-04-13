@@ -22,7 +22,7 @@ public class MainFragment extends Fragment {
 
 
     ListView nutrients;
-    ArrayList<String> nutrient_names;
+    ArrayList<Nutrient> nutrientList;
 
 
     public MainFragment() {
@@ -41,20 +41,17 @@ public class MainFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         nutrients = view.findViewById(R.id.nutrientList);
-        nutrient_names = new ArrayList<String>();
+        nutrientList = dataStorage.getAllNutrients();
 
-        for (Nutrient e : dataStorage.getAllNutrients()) {
-            nutrient_names.add(e.getName());
-        }
 
-        if (!nutrient_names.isEmpty()) {
-            NutrientAdapter nutrientAdapter = new NutrientAdapter(getActivity(), nutrient_names.toArray(new String[0]));
+        if (!nutrientList.isEmpty()) {
+            NutrientAdapter nutrientAdapter = new NutrientAdapter(getActivity(), nutrientList);
             nutrients.setAdapter(nutrientAdapter);
 
 
             nutrients.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Toast.makeText(getContext(), nutrient_names.get(position), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), nutrientList.get(position).getName(), Toast.LENGTH_LONG).show();
                 }
             });
         }
