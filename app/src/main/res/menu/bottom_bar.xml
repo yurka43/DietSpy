@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id = "@+id/mainFragment"
+        android:icon = "@drawable/food"
+        app:showAsAction="ifRoom"
+        android:title="@string/nutrients" />
+
+    <item
+        android:id = "@+id/secondFragment"
+        android:icon = "@drawable/food"
+        app:showAsAction="ifRoom"
+        android:title="@string/af" />
+
+    <item
+        android:id = "@+id/thirdFragment"
+        android:icon = "@drawable/food"
+        app:showAsAction="ifRoom"
+        android:title="@string/record" />
+
+    <item
+        android:id = "@+id/fourthFragment"
+        android:icon = "@drawable/food"
+        app:showAsAction="ifRoom"
+        android:title="@string/cp" />
+
+</menu>
