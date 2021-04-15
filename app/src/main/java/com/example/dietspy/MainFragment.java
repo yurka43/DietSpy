@@ -51,7 +51,13 @@ public class MainFragment extends Fragment {
 
             nutrients.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Toast.makeText(getContext(), nutrientList.get(position).getName(), Toast.LENGTH_LONG).show();
+                    Nutrient selectedNutrient = nutrientList.get(position);
+                    Fragment fragment = new EditNutrientFragment(selectedNutrient.getName(), selectedNutrient.getUnitInt(),
+                            selectedNutrient.getFlag(), selectedNutrient.getTarget());
+                    FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                    transaction.replace(R.id.controller, fragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
                 }
             });
         }

@@ -31,7 +31,11 @@ public class AppDatabase extends SQLiteOpenHelper {
         String query = "CREATE TABLE IF NOT EXISTS Nutrients(Name TEXT PRIMARY KEY, Target INTEGER, Flag Integer, Units Integer)";
         db.execSQL(query);
         query = "CREATE TABLE IF NOT EXISTS Progress(Name TEXT PRIMARY KEY, Amount INTEGER, " +
-                "Date TEXT, Time Text, FOREIGN KEY(Name) REFERENCES Nutrients(Name))";
+                "Date TEXT, Time Text," +
+                "CONSTRAINT delNutrient FOREIGN KEY(Name) REFERENCES Nutrients(Name) " +
+                "ON DELETE CASCADE ON UPDATE CASCADE)";
+        db.execSQL(query);
+        query = "PRAGMA foreign_keys = ON";
         db.execSQL(query);
     }
 
@@ -49,6 +53,21 @@ public class AppDatabase extends SQLiteOpenHelper {
         contentValues.put("Units", units);
         db.insert("Nutrients", null, contentValues);
         return true;
+    }
+
+    public boolean deleteNutrient (String name) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete("Nutrients", "Name= ?", new String[] {name}) > 0;
+    }
+
+    public boolean updateNutrient (String oldName, String newName, int target, int flag, int units) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("Name", newName);
+        contentValues.put("Target", target);
+        contentValues.put("Flag", flag);
+        contentValues.put("Units", units);
+        return db.update("Nutrients", contentValues, "Name= ?", new String[]{oldName}) > 0;
     }
 
     public boolean insertProgress(String name, int amount) {

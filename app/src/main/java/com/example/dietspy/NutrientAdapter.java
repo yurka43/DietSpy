@@ -31,6 +31,7 @@ public class NutrientAdapter extends ArrayAdapter<Nutrient> {
 
         row_title.setText(curNutrient.getName());
         progressText.setText("" + "0/" + curNutrient.getTarget() + curNutrient.getUnits());
+        progressBar.setProgress(50, true);
         return row;
     }
 }

@@ -12,6 +12,9 @@
     <string name="target_amount">Target Amount</string>
     <string name="limit_amount">Limit</string>
     <string name="save">Save</string>
+    <string name="ok">Ok</string>
+    <string name="del">Delete</string>
+    <string name="edit">Edit Nutrient</string>
     <string-array name="limits">
         <item>Target</item>
         <item>Limit</item>
@@ -21,4 +24,6 @@
         <item>mg</item>
         <item>mcg</item>
     </string-array>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
