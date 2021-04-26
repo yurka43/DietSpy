@@ -30,12 +30,18 @@ public class AppDatabase extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         String query = "CREATE TABLE IF NOT EXISTS Nutrients(Name TEXT PRIMARY KEY, Target INTEGER, Flag Integer, Units Integer)";
         db.execSQL(query);
+        query = "PRAGMA foreign_keys = ON";
+        db.execSQL(query);
         query = "CREATE TABLE IF NOT EXISTS Progress(Name TEXT PRIMARY KEY, Amount INTEGER, " +
                 "Date TEXT, Time Text," +
                 "CONSTRAINT delNutrient FOREIGN KEY(Name) REFERENCES Nutrients(Name) " +
                 "ON DELETE CASCADE ON UPDATE CASCADE)";
         db.execSQL(query);
-        query = "PRAGMA foreign_keys = ON";
+        query = "CREATE TABLE IF NOT EXISTS Foods(Id INTEGER PRIMARY KEY, Name TEXT, BaseFoodFlag INTEGER)";
+        db.execSQL(query);
+        query = "CREATE TABLE IF NOT EXISTS FoodNutrientPair(FoodId INTEGER, NutrientName TEXT, PRIMARY KEY(FoodId, NutrientName)," +
+                "FOREIGN KEY(FoodId) REFERENCES Foods(Id) ON DELETE CASCADE ON UPDATE CASCADE," +
+                "FOREIGN KEY(NutrientName) REFERENCES Nutrients(Name) ON DELETE CASCADE ON UPDATE CASCADE)";
         db.execSQL(query);
     }
 
@@ -94,6 +100,21 @@ public class AppDatabase extends SQLiteOpenHelper {
             progress = res.getInt(res.getColumnIndex(COLUMN_AMOUNT));
         }
         return progress;
+    }
+
+    public ArrayList<String> getFoodNames() {
+        ArrayList<String> list = new ArrayList<String>();
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "SELECT F.name from Foods F", null );
+        res.moveToFirst();
+
+        while(res.isAfterLast() == false) {
+            list.add(res.getString(res.getColumnIndex(COLUMN_NAME)));
+            res.moveToNext();
+        }
+
+        return list;
     }
 
     public ArrayList<Nutrient> getAllNutrients() {

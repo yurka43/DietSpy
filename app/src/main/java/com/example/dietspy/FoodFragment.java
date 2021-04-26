@@ -18,14 +18,14 @@ import java.util.ArrayList;
 
 import static com.example.dietspy.MainActivity.dataStorage;
 
-public class MainFragment extends Fragment {
+public class FoodFragment extends Fragment {
 
 
-    ListView nutrients;
-    ArrayList<Nutrient> nutrientList;
+    ListView foods;
+    ArrayList<String> foodList;
 
 
-    public MainFragment() {
+    public FoodFragment() {
     }
 
     public static MainFragment newInstance() {
@@ -39,30 +39,31 @@ public class MainFragment extends Fragment {
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_main, container, false);
-        nutrients = view.findViewById(R.id.nutrientList);
-        nutrientList = dataStorage.getAllNutrients();
+        View view = inflater.inflate(R.layout.fragment_food, container, false);
+        foods = view.findViewById(R.id.foodList);
+        foodList = dataStorage.getFoodNames();
 
 
-        if (!nutrientList.isEmpty()) {
-            NutrientAdapter nutrientAdapter = new NutrientAdapter(getActivity(), nutrientList);
-            nutrients.setAdapter(nutrientAdapter);
+        if (!foodList.isEmpty()) {
+            ArrayAdapter<String> foodAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, foodList);
+            foods.setAdapter(foodAdapter);
 
 
-            nutrients.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            foods.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Nutrient selectedNutrient = nutrientList.get(position);
-                    Fragment fragment = new EditNutrientFragment(selectedNutrient.getName(), selectedNutrient.getUnitInt(),
-                            selectedNutrient.getFlag(), selectedNutrient.getTarget());
+                   /* Nutrient selectedFood = foodList.get(position);
+                    Fragment fragment = new EditNutrientFragment(selectedFood.getName(), selectedFood.getUnitInt(),
+                            selectedFood.getFlag(), selectedFood.getTarget());
                     FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
                     transaction.replace(R.id.controller, fragment);
                     transaction.addToBackStack(null);
-                    transaction.commit();
+                    transaction.commit(); */
+                    System.out.println("to do");
                 }
             });
         }
 
-        Button add = view.findViewById(R.id.add_nutrient);
+        Button add = view.findViewById(R.id.add_food);
         add.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Fragment fragment = new AddNutrientFragment();

@@ -15,6 +15,8 @@
     <string name="ok">Ok</string>
     <string name="del">Delete</string>
     <string name="edit">Edit Nutrient</string>
+    <string name="add_food">Add Food</string>
+    <string name="food_name">Food Name</string>
     <string-array name="limits">
         <item>Target</item>
         <item>Limit</item>
