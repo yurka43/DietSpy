@@ -66,7 +66,7 @@ public class FoodFragment extends Fragment {
         Button add = view.findViewById(R.id.add_food);
         add.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Fragment fragment = new AddNutrientFragment();
+                Fragment fragment = new AddFoodFragment();
                 FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
                 transaction.replace(R.id.controller, fragment);
                 transaction.addToBackStack(null);

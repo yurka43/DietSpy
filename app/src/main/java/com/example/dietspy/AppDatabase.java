@@ -21,6 +21,7 @@ public class AppDatabase extends SQLiteOpenHelper {
     private static final String COLUMN_FLAG = "Flag";
     private static final String COLUMN_UNITS = "Units";
     private static final String COLUMN_AMOUNT = "Amount";
+    private static final String COLUMN_ID = "Id";
 
 
     public AppDatabase(Context context) {
@@ -89,6 +90,22 @@ public class AppDatabase extends SQLiteOpenHelper {
         return true;
     }
 
+    public boolean insertFood(String name, int baseFoodFlag) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery("SELECT MAX(Id) FROM Foods", null);
+        int maxId = 0;
+        if (res.getCount() > 0) {
+            maxId = res.getInt(res.getColumnIndex(COLUMN_ID));
+        }
+        db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(COLUMN_ID, maxId);
+        contentValues.put(COLUMN_NAME, name);
+        contentValues.put("BaseFoodFlag", baseFoodFlag);
+        db.insert("Foods", null, contentValues);
+        return true;
+    }
+
     public int getNutrientProgressToday(String nutrientName) {
         SQLiteDatabase db = this.getReadableDatabase();
         DateFormat df = new SimpleDateFormat("EEE, d MMM yyyy, HH:mm");
@@ -132,6 +149,16 @@ public class AppDatabase extends SQLiteOpenHelper {
             list.add(cur);
             res.moveToNext();
         }
+
         return list;
+    }
+
+    public ArrayList<String> getNutrientNames() {
+        ArrayList<String> names = new ArrayList<String>();
+        ArrayList<Nutrient> nutrients = getAllNutrients();
+        for (Nutrient n : nutrients) {
+            names.add(n.getName());
+        }
+        return names;
     }
 }
