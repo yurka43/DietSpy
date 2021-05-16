@@ -7,6 +7,7 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.sql.PreparedStatement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,12 +39,19 @@ public class AppDatabase extends SQLiteOpenHelper {
                 "CONSTRAINT delNutrient FOREIGN KEY(Name) REFERENCES Nutrients(Name) " +
                 "ON DELETE CASCADE ON UPDATE CASCADE)";
         db.execSQL(query);
-        query = "CREATE TABLE IF NOT EXISTS Foods(Id INTEGER PRIMARY KEY, Name TEXT, BaseFoodFlag INTEGER)";
+        query = "CREATE TABLE IF NOT EXISTS Foods(Id INTEGER PRIMARY KEY, Name TEXT)";
         db.execSQL(query);
-        query = "CREATE TABLE IF NOT EXISTS FoodNutrientPair(FoodId INTEGER, NutrientName TEXT, PRIMARY KEY(FoodId, NutrientName)," +
+        query = "CREATE TABLE IF NOT EXISTS FoodNutrientPair(FoodId INTEGER, NutrientName TEXT, Amount INTEGER, Unit INTEGER, PRIMARY KEY(FoodId, NutrientName)," +
                 "FOREIGN KEY(FoodId) REFERENCES Foods(Id) ON DELETE CASCADE ON UPDATE CASCADE," +
                 "FOREIGN KEY(NutrientName) REFERENCES Nutrients(Name) ON DELETE CASCADE ON UPDATE CASCADE)";
         db.execSQL(query);
+        query = "CREATE TABLE IF NOT EXISTS Ingredients(IngredientName TEXT, Units Integer)";
+        db.execSQL(query);
+        query = "CREATE TABLE IF NOT EXISTS FoodIngredientPair(FoodId INTEGER, IngredientName TEXT, Amount REAL, PRIMARY KEY(FoodId, IngredientName)," +
+                "FOREIGN KEY(FoodId) REFERENCES Foods(Id) ON DELETE CASCADE ON UPDATE CASCADE," +
+                "FOREIGN KEY(IngredientName) REFERENCES Ingredients(IngredientName) ON DELETE CASCADE ON UPDATE CASCADE)";
+        db.execSQL(query);
+
     }
 
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -90,19 +98,32 @@ public class AppDatabase extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean insertFood(String name, int baseFoodFlag) {
+    public int insertFood() {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res =  db.rawQuery("SELECT MAX(Id) FROM Foods", null);
         int maxId = 0;
         if (res.getCount() > 0) {
-            maxId = res.getInt(res.getColumnIndex(COLUMN_ID));
+            maxId = res.getInt(res.getColumnIndex(COLUMN_ID))+1;
         }
         db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(COLUMN_ID, maxId);
-        contentValues.put(COLUMN_NAME, name);
-        contentValues.put("BaseFoodFlag", baseFoodFlag);
+        contentValues.put(COLUMN_NAME, "" + maxId);
         db.insert("Foods", null, contentValues);
+        return maxId;
+    }
+
+    public boolean updateFood(int id, String name) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(COLUMN_NAME, name);
+        db.update("Foods", contentValues, "Id = " + id, null);
+        return true;
+    }
+
+    public boolean deleteFood(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("Foods", "Id = " + id, null);
         return true;
     }
 
@@ -161,4 +182,31 @@ public class AppDatabase extends SQLiteOpenHelper {
         }
         return names;
     }
+
+    public boolean insertFoodNutrient(int foodId, String nutrientName, int amount, int unit) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("FoodId", foodId);
+        contentValues.put("NutrientName", nutrientName);
+        contentValues.put("Amount", amount);
+        contentValues.put("Unit", unit);
+        db.insert("FoodNutrientPair", null, contentValues);
+        return true;
+    }
+
+    public String getFoodName(int foodId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "SELECT F.name from Foods F", null );
+        res.moveToFirst();
+
+        String result = "Error";
+
+        while(res.isAfterLast() == false) {
+            result = res.getString(res.getColumnIndex(COLUMN_NAME));
+            res.moveToNext();
+        }
+
+        return result;
+    }
+
 }

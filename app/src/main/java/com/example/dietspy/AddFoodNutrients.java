@@ -24,22 +24,18 @@ import java.util.ArrayList;
 
 import static com.example.dietspy.MainActivity.dataStorage;
 
-public class AddFoodFragment extends Fragment {
+public class AddFoodNutrients extends Fragment {
 
-    private static String name;
+
     private static int foodId;
 
-    public AddFoodFragment() {
-        this.foodId = dataStorage.insertFood();
+    public AddFoodNutrients(int foodId) {
+        this.foodId = foodId;
     }
 
-    public AddFoodFragment(int id) {
-        this.foodId = id;
-        this.name = dataStorage.getFoodName(id);
-    }
 
-    public static AddFoodFragment newInstance() {
-        AddFoodFragment fragment = new AddFoodFragment();
+    public static AddFoodNutrients newInstance() {
+        AddFoodNutrients fragment = new AddFoodNutrients(foodId);
         return fragment;
     }
 
@@ -49,39 +45,32 @@ public class AddFoodFragment extends Fragment {
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_add_food, container, false);
-        EditText foodField = view.findViewById(R.id.food_field);
+        View view = inflater.inflate(R.layout.add_food_nutrients, container, false);
 
-        if (this.name != null) {
-            CharSequence text = this.name;
-            foodField.setText(text);
-        }
+        ArrayList<String> nutrientNames = dataStorage.getNutrientNames();
 
-        Button add = view.findViewById(R.id.add_food_nutrient);
-        ArrayList<Pair<String,Integer>> nutrientValuePairs = new ArrayList<Pair<String,Integer>>();
-        ListView foodNutrients = view.findViewById(R.id.foodNutrients);
+        AutoCompleteTextView autoCompleteInput = view.findViewById(R.id.autoEnterNutrients);
+        ArrayAdapter<String> autoAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line,
+                nutrientNames);
+        autoCompleteInput.setAdapter(autoAdapter);
 
-        Spinner nutrient_ingredient = view.findViewById(R.id.nutrient_ingredient);
-        ArrayAdapter<CharSequence> items = ArrayAdapter.createFromResource(container.getContext(),
-                R.array.food_spinner, android.R.layout.simple_spinner_dropdown_item);
-        nutrient_ingredient.setAdapter(items);
+        ArrayAdapter<CharSequence> unitNames = ArrayAdapter.createFromResource(container.getContext(),
+                R.array.units, android.R.layout.simple_spinner_dropdown_item);
 
-        add.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
+        Spinner spinner = view.findViewById(R.id.units2);
+        spinner.setAdapter(unitNames);
 
-            }
-        });
-
-        Button save = view.findViewById(R.id.save_food_button);
-
+        Button save = view.findViewById(R.id.save_nutrient_button2);
+        Button back = view.findViewById(R.id.back_button);
 
         save.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                String foodName = foodField.getEditableText().toString();
-                if (foodName.equals("")) {
+
+            public void onClick(View v) {
+                String nutrientName = autoCompleteInput.getText().toString();
+                if (!nutrientNames.contains(nutrientName)) {
                     new AlertDialog.Builder(getContext())
                             .setTitle("Warning")
-                            .setMessage("Please enter food name, before saving it")
+                            .setMessage("Before you use this nutrient, please add it in the nutrient tab")
                             .setCancelable(true)
                             .setPositiveButton("ok", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
@@ -89,7 +78,9 @@ public class AddFoodFragment extends Fragment {
                                 }
                             }).show();
                 } else {
-                    dataStorage.updateFood(foodId, foodName);
+                    int unitChoice = spinner.getSelectedItemPosition();
+                    int amount = Integer.parseInt(((EditText) container.findViewById(R.id.amount_field)).getText().toString());
+                    dataStorage.insertFoodNutrient(foodId, nutrientName, amount, unitChoice);
 
                     Fragment fragment = new MainFragment();
                     FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
@@ -97,15 +88,12 @@ public class AddFoodFragment extends Fragment {
                     transaction.addToBackStack(null);
                     transaction.commit();
                 }
+
             }
         });
 
-        Button delete = view.findViewById(R.id.delete_button);
-
-        delete.setOnClickListener(new View.OnClickListener() {
+        back.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                dataStorage.deleteFood(foodId);
-
                 Fragment fragment = new MainFragment();
                 FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
                 transaction.replace(R.id.controller, fragment);
