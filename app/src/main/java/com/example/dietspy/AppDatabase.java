@@ -6,9 +6,11 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.util.Pair;
 
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,8 +52,7 @@ public class AppDatabase extends SQLiteOpenHelper {
         query = "CREATE TABLE IF NOT EXISTS Ingredients(IngredientName TEXT PRIMARY KEY, Units Integer)";
         db.execSQL(query);
         query = "CREATE TABLE IF NOT EXISTS FoodIngredientPair(FoodId INTEGER, IngredientName TEXT UNIQUE, Amount REAL, PRIMARY KEY(FoodId, IngredientName)," +
-                "FOREIGN KEY(FoodId) REFERENCES Foods(Id) ON DELETE CASCADE," +
-                "FOREIGN KEY(IngredientName) REFERENCES Ingredients(IngredientName) ON DELETE CASCADE)";
+                "FOREIGN KEY(FoodId) REFERENCES Foods(Id) ON DELETE CASCADE)";
         db.execSQL(query);
 
     }
@@ -248,5 +249,91 @@ public class AppDatabase extends SQLiteOpenHelper {
 
         return foodNutrients;
     }
+
+    public ArrayList<Pair<String, Pair<Double, Integer>>> getFoodIngredients(int id) {
+        ArrayList<Pair<String, Pair<Double, Integer>>> foodIngredients =
+                new ArrayList<Pair<String, Pair<Double, Integer>>>();
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "SELECT * from FoodIngredientPair F WHERE F.FoodId = " + id, null );
+        res.moveToFirst();
+        Cursor res2;
+
+        while(res.isAfterLast() == false) {
+            String ingredientName = res.getString(res.getColumnIndex("IngredientName"));
+            res2 = db.query("Ingredients", new String[]{"Units"}, "IngredientName = ?",
+                    new String[]{ingredientName}, null, null, null);
+            res2.moveToFirst();
+            int unit = res2.getInt(res2.getColumnIndex("Units"));
+            Pair<Double, Integer> amount_unit = new Pair<Double, Integer>(res.getDouble(res.getColumnIndex(COLUMN_AMOUNT)),
+                    unit);
+
+            Pair<String, Pair<Double, Integer>> result =
+                    new Pair<String, Pair<Double,Integer>>(ingredientName, amount_unit);
+            foodIngredients.add(result);
+            res.moveToNext();
+        }
+
+        return foodIngredients;
+    }
+
+    public ArrayList<String> getIngredientNames() {
+        ArrayList<String> ingredients = new ArrayList<String>();
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "SELECT I.IngredientName from Ingredients I", null );
+        res.moveToFirst();
+
+        while(res.isAfterLast() == false) {
+            String result = res.getString(res.getColumnIndex("IngredientName"));
+            ingredients.add(result);
+            res.moveToNext();
+        }
+        return ingredients;
+    }
+
+    public int ingredientUnit(String name) {
+        int result = -1;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.query("Ingredients", new String[]{"Units"}, "IngredientName = ?",
+                new String[]{name}, null, null, null);
+        res.moveToFirst();
+
+        while(res.isAfterLast() == false) {
+            result = res.getInt(res.getColumnIndex("Units"));
+            res.moveToNext();
+        }
+
+        return result;
+    }
+
+    public boolean insertIngredient(String name, int unit) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.query("Ingredients", new String[]{"IngredientName"}, "IngredientName = ?",
+                new String[]{name}, null, null, null);
+        res.moveToFirst();
+        if (res.getCount() > 0) {
+            return false;
+        }
+
+        db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("IngredientName", name);
+        contentValues.put("Units", unit);
+        db.insert("Ingredients", null, contentValues);
+        return true;
+    }
+
+    public boolean insertFoodIngredient(int foodId, String ingredientName, double amount) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("FoodId", foodId);
+        contentValues.put("IngredientName", ingredientName);
+        contentValues.put("Amount", amount);
+        db.insert("FoodIngredientPair", null, contentValues);
+        return true;
+    }
+
 
 }
