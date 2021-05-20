@@ -21,6 +21,8 @@
     <string name="add">Add</string>
     <string name="back">Back</string>
     <string name="antf">Add Nutrients To Food</string>
+    <string name="efn">Edit Food Nutrient</string>
+    <string name="efi">Edit Food Ingredient</string>
     <string name="aitf">Add Ingredients To Food</string>
     <string name="in">Ingredient Name</string>
 

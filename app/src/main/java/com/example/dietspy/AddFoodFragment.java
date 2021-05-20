@@ -19,6 +19,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -122,6 +123,25 @@ public class AddFoodFragment extends Fragment {
         });
 
         AddFoodFragment copy = this;
+
+        nutrientIngredientList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Fragment fragment;
+                if (nutrient_ingredient.getSelectedItemPosition() == 1) {
+                    fragment = new EditFoodIngredient(foodId, copy, ingredients.get(i));
+                } else {
+                    fragment = new EditFoodNutrient(foodId, copy, nutrients.get(i));
+                }
+
+                FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                transaction.replace(container.getId(), fragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+            }
+        });
+
+
         add.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Fragment fragment;
@@ -191,8 +211,6 @@ public class AddFoodFragment extends Fragment {
     }
 
 
-
-
     public boolean addNutrient(Pair<String, Pair<Integer, Integer>> nutrient) {
         for (Pair<String, Pair<Integer, Integer>> n : nutrients) {
             if (n.first.equals(nutrient.first)) {
@@ -204,6 +222,12 @@ public class AddFoodFragment extends Fragment {
         return true;
     }
 
+    public boolean deleteNutrient(Pair<String, Pair<Integer, Integer>> nutrient) {
+        boolean deleted = nutrients.remove(nutrient);
+        this.nutrientNames = extractNames(this.nutrients);
+        return deleted;
+    }
+
     public boolean addIngredient(Pair<String, Pair<Double, Integer>> ingredient) {
         for (Pair<String, Pair<Double, Integer>> n : ingredients) {
             if (n.first.equals(ingredient.first)) {
@@ -213,6 +237,20 @@ public class AddFoodFragment extends Fragment {
         this.ingredients.add(ingredient);
         this.ingredientNames = extractINames(this.ingredients);
         return true;
+    }
+
+    public boolean deleteIngredient(Pair<String, Pair<Double, Integer>> ingredient) {
+        boolean deleted = false;
+        for (Pair<String, Pair<Double, Integer>> in : ingredients) {
+            if (in.first.equals(ingredient.first)) {
+                ingredients.remove(in);
+                deleted = true;
+                break;
+            }
+        }
+
+        this.ingredientNames = extractINames(this.ingredients);
+        return deleted;
     }
 
 }

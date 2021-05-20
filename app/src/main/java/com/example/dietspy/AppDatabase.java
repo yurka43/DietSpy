@@ -210,8 +210,25 @@ public class AppDatabase extends SQLiteOpenHelper {
         contentValues.put("NutrientName", nutrientName);
         contentValues.put("Amount", amount);
         contentValues.put("Unit", unit);
-        db.insert("FoodNutrientPair", null, contentValues);
+        long inserted = db.insertWithOnConflict("FoodNutrientPair", null,
+                contentValues, SQLiteDatabase.CONFLICT_IGNORE);
+        if (inserted == -1) {
+            db.update("FoodNutrientPair", contentValues, "FoodId = ?",
+                    new String[]{"" + foodId});
+        }
         return true;
+    }
+
+    public void deleteFoodNutrient(int foodId, String nutrientName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("FoodNutrientPair", "FoodId = ? AND NutrientName = ?",
+                new String[]{"" + foodId, nutrientName});
+    }
+
+    public void deleteFoodIngredient(int foodId, String ingredientName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("FoodIngredientPair", "FoodId = ? AND IngredientName = ?",
+                new String[]{"" + foodId, ingredientName});
     }
 
     public String getFoodName(int foodId) {
@@ -331,7 +348,11 @@ public class AppDatabase extends SQLiteOpenHelper {
         contentValues.put("FoodId", foodId);
         contentValues.put("IngredientName", ingredientName);
         contentValues.put("Amount", amount);
-        db.insert("FoodIngredientPair", null, contentValues);
+        long inserted = db.insertWithOnConflict("FoodIngredientPair", null, contentValues, SQLiteDatabase.CONFLICT_IGNORE);
+        if (inserted == -1) {
+            db.update("FoodIngredientPair", contentValues, "FoodId = ?",
+                    new String[]{"" + foodId});
+        }
         return true;
     }
 

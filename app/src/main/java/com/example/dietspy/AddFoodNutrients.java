@@ -80,6 +80,19 @@ public class AddFoodNutrients extends Fragment {
                             }).show();
                 } else {
                     int unitChoice = spinner.getSelectedItemPosition();
+                    if (((EditText) container.findViewById(R.id.amount_field)).getText().toString().equals("")) {
+                        new AlertDialog.Builder(getContext())
+                                .setTitle("Warning")
+                                .setMessage("Enter the amount")
+                                .setCancelable(true)
+                                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                }).show();
+                        return;
+                    }
+
                     int amount = Integer.parseInt(((EditText) container.findViewById(R.id.amount_field)).getText().toString());
                     Pair<String, Pair<Integer, Integer>> nutrient =
                             new Pair<String, Pair<Integer, Integer>>(nutrientName, new Pair<Integer,Integer>(amount,unitChoice));
