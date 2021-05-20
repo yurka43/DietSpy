@@ -28,14 +28,16 @@ public class AddFoodNutrients extends Fragment {
 
 
     private static int foodId;
+    private static AddFoodFragment parent;
 
-    public AddFoodNutrients(int foodId) {
+    public AddFoodNutrients(int foodId, AddFoodFragment parent) {
         this.foodId = foodId;
+        this.parent = parent;
     }
 
 
     public static AddFoodNutrients newInstance() {
-        AddFoodNutrients fragment = new AddFoodNutrients(foodId);
+        AddFoodNutrients fragment = new AddFoodNutrients(foodId, parent);
         return fragment;
     }
 
@@ -64,7 +66,6 @@ public class AddFoodNutrients extends Fragment {
         Button back = view.findViewById(R.id.back_button);
 
         save.setOnClickListener(new View.OnClickListener() {
-
             public void onClick(View v) {
                 String nutrientName = autoCompleteInput.getText().toString();
                 if (!nutrientNames.contains(nutrientName)) {
@@ -80,25 +81,29 @@ public class AddFoodNutrients extends Fragment {
                 } else {
                     int unitChoice = spinner.getSelectedItemPosition();
                     int amount = Integer.parseInt(((EditText) container.findViewById(R.id.amount_field)).getText().toString());
-                    dataStorage.insertFoodNutrient(foodId, nutrientName, amount, unitChoice);
-
-                    Fragment fragment = new MainFragment();
-                    FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                    transaction.replace(R.id.controller, fragment);
-                    transaction.addToBackStack(null);
-                    transaction.commit();
+                    Pair<String, Pair<Integer, Integer>> nutrient =
+                            new Pair<String, Pair<Integer, Integer>>(nutrientName, new Pair<Integer,Integer>(amount,unitChoice));
+                    if (!parent.addNutrient(nutrient)) {
+                        new AlertDialog.Builder(getContext())
+                                .setTitle("Warning")
+                                .setMessage("This nutrient is already added. Click on it to edit!")
+                                .setCancelable(true)
+                                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                }).show();
+                    } else {
+                        parent.updateFragment();
+                        getParentFragmentManager().popBackStack();
+                    }
                 }
-
             }
         });
 
         back.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                Fragment fragment = new MainFragment();
-                FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                transaction.replace(R.id.controller, fragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
+                getParentFragmentManager().popBackStack();
             }
         });
 

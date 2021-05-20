@@ -51,14 +51,11 @@ public class FoodFragment extends Fragment {
 
             foods.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                   /* Nutrient selectedFood = foodList.get(position);
-                    Fragment fragment = new EditNutrientFragment(selectedFood.getName(), selectedFood.getUnitInt(),
-                            selectedFood.getFlag(), selectedFood.getTarget());
+                    Fragment fragment = new AddFoodFragment(position, foodAdapter.getItem(position));
                     FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
                     transaction.replace(R.id.controller, fragment);
                     transaction.addToBackStack(null);
-                    transaction.commit(); */
-                    System.out.println("to do");
+                    transaction.commit();
                 }
             });
         }

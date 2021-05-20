@@ -54,7 +54,7 @@
         app:layout_constraintTop_toBottomOf="@+id/add_food_toolbar" />
 
     <EditText
-        android:id="@+id/food_field"
+        android:id="@+id/food_field2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -73,7 +73,7 @@
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/food_field">
+        app:layout_constraintTop_toBottomOf="@+id/food_field2">
 
         <Spinner
             android:id="@+id/nutrient_ingredient"
