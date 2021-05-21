@@ -290,7 +290,6 @@ public class AppDatabase extends SQLiteOpenHelper {
             String fullDateTime = res.getString(res.getColumnIndex("Date")) +
                     res.getString(res.getColumnIndex("Time"));
             int id = res.getInt(res.getColumnIndex("FoodId"));
-            System.out.println(id);
             Record rec = new Record(id, fullDateTime);
             list.add(rec);
 
@@ -507,7 +506,6 @@ public class AppDatabase extends SQLiteOpenHelper {
             }
 
             for (Pair<String, Pair<Double, Integer>> n : foodNutrients) {
-                System.out.println(this.getFoodName(i) + " " + n.first + " " + n.second.first);
                 if (nv.containsKey(n.first)) {
                     double old = nv.get(n.first);
                     nv.put(n.first, old + (n.second.first / Math.pow(10.0, n.second.second * 3)));

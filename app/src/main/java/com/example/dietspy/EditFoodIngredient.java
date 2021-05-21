@@ -84,7 +84,6 @@ public class EditFoodIngredient extends Fragment {
                 } else {
                     double amount = Double.parseDouble(amountField.getText().toString());
                     int unit = units.getSelectedItemPosition();
-                    System.out.println("Delete" + parent.deleteIngredient(ingredient));
                     Pair<Double, Integer> newAmountUnit = new Pair<Double, Integer>(amount, unit);
                     ingredient = new Pair<String, Pair<Double, Integer>>(ingredient.first, newAmountUnit);
                     parent.addIngredient(ingredient);

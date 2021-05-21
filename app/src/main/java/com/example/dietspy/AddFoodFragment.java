@@ -192,7 +192,6 @@ public class AddFoodFragment extends Fragment {
         delete.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 if (!newFood) {
-                    System.out.println(newFood);
                     dataStorage.deleteFood(foodId);
                 }
                 foodField.setText("");
