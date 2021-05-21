@@ -16,9 +16,9 @@
         tools:layout="@layout/fragment_food" />
     <fragment
         android:id="@+id/thirdFragment"
-        android:name="com.example.dietspy.ThirdFragment"
+        android:name="com.example.dietspy.RecordFragment"
         android:label="fragment_third"
-        tools:layout="@layout/fragment_third" />
+        tools:layout="@layout/fragment_record" />
     <fragment
         android:id="@+id/fourthFragment"
         android:name="com.example.dietspy.FourthFragment"

@@ -10,6 +10,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import static com.example.dietspy.MainActivity.dataStorage;
+
 public class NutrientAdapter extends ArrayAdapter<Nutrient> {
 
     private Context context;
@@ -29,9 +31,12 @@ public class NutrientAdapter extends ArrayAdapter<Nutrient> {
         ProgressBar progressBar = row.findViewById(R.id.progressBar);
         Nutrient curNutrient = nutrients.get(position);
 
+        int progressAmount = dataStorage.getNutrientProgressToday(curNutrient.getName());
+        double normalizedAmount = progressAmount / Math.pow(10.0, 3.0 * ((double) curNutrient.getUnitInt()));
+
         row_title.setText(curNutrient.getName());
-        progressText.setText("" + "0/" + curNutrient.getTarget() + curNutrient.getUnits());
-        progressBar.setProgress(50, true);
+        progressText.setText("" + normalizedAmount + "/" + curNutrient.getTarget() + curNutrient.getUnits());
+        progressBar.setProgress((int) (normalizedAmount/curNutrient.getTarget()), true);
         return row;
     }
 }

@@ -42,6 +42,7 @@ public class MainFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         nutrients = view.findViewById(R.id.nutrientList);
         nutrientList = dataStorage.getAllNutrients();
+        dataStorage.calculateProgress();
 
 
         if (!nutrientList.isEmpty()) {

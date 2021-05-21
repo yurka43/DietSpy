@@ -15,6 +15,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.ListIterator;
 
 public class AppDatabase extends SQLiteOpenHelper {
 
@@ -39,7 +41,6 @@ public class AppDatabase extends SQLiteOpenHelper {
         query = "PRAGMA foreign_keys = ON";
         db.execSQL(query);
         query = "CREATE TABLE IF NOT EXISTS Progress(Name TEXT PRIMARY KEY, Amount INTEGER, " +
-                "Date TEXT, Time Text," +
                 "CONSTRAINT delNutrient FOREIGN KEY(Name) REFERENCES Nutrients(Name) " +
                 "ON DELETE CASCADE ON UPDATE CASCADE)";
         db.execSQL(query);
@@ -47,11 +48,14 @@ public class AppDatabase extends SQLiteOpenHelper {
         db.execSQL(query);
         query = "CREATE TABLE IF NOT EXISTS FoodNutrientPair(FoodId INTEGER, NutrientName TEXT, Amount INTEGER, Unit INTEGER, PRIMARY KEY (FoodId, NutrientName)," +
                 "FOREIGN KEY(FoodId) REFERENCES Foods(Id) ON DELETE CASCADE," +
-                "FOREIGN KEY(NutrientName) REFERENCES Nutrients(Name) ON DELETE CASCADE)";
+                "FOREIGN KEY(NutrientName) REFERENCES Nutrients(Name) ON DELETE CASCADE ON UPDATE CASCADE)";
         db.execSQL(query);
         query = "CREATE TABLE IF NOT EXISTS Ingredients(IngredientName TEXT PRIMARY KEY, Units Integer)";
         db.execSQL(query);
         query = "CREATE TABLE IF NOT EXISTS FoodIngredientPair(FoodId INTEGER, IngredientName TEXT UNIQUE, Amount REAL, PRIMARY KEY(FoodId, IngredientName)," +
+                "FOREIGN KEY(FoodId) REFERENCES Foods(Id) ON DELETE CASCADE)";
+        db.execSQL(query);
+        query = "CREATE TABLE IF NOT EXISTS FoodRecord(FoodId INTEGER, Date TEXT, Time TEXT, PRIMARY KEY(FoodId, Date, Time)," +
                 "FOREIGN KEY(FoodId) REFERENCES Foods(Id) ON DELETE CASCADE)";
         db.execSQL(query);
 
@@ -88,18 +92,18 @@ public class AppDatabase extends SQLiteOpenHelper {
         return db.update("Nutrients", contentValues, "Name= ?", new String[]{oldName}) > 0;
     }
 
-    public boolean insertProgress(String name, int amount) {
+    public boolean insertProgress(int foodId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put("Name", name);
-        contentValues.put("Amount", amount);
+        contentValues.put("FoodId", foodId);
         DateFormat df = new SimpleDateFormat("EEE, d MMM yyyy, HH:mm");
         String dateTime = df.format(Calendar.getInstance().getTime());
-        contentValues.put("Date", dateTime.substring(0, 15));
-        contentValues.put("Time", dateTime.substring(16, 24));
-        db.insert("Progress", null, contentValues);
+        contentValues.put("Date", dateTime.substring(0, 16));
+        contentValues.put("Time", dateTime.substring(17, 23));
+        db.insert("FoodRecord", null, contentValues);
         return true;
     }
+
 
     public boolean insertFood(int id, String name) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -118,6 +122,8 @@ public class AppDatabase extends SQLiteOpenHelper {
         if (res.getCount() > 0) {
             maxId = res.getInt(res.getColumnIndex("MAX(Id)")) + 1;
         }
+
+        res.close();
         return maxId;
     }
 
@@ -138,6 +144,8 @@ public class AppDatabase extends SQLiteOpenHelper {
         if (res.getCount() > 0) {
             id = res.getInt(res.getColumnIndex("Id"));
         }
+
+        res.close();
         return id;
     }
 
@@ -150,13 +158,17 @@ public class AppDatabase extends SQLiteOpenHelper {
     public int getNutrientProgressToday(String nutrientName) {
         SQLiteDatabase db = this.getReadableDatabase();
         DateFormat df = new SimpleDateFormat("EEE, d MMM yyyy, HH:mm");
-        String date = df.format(Calendar.getInstance().getTime()).substring(0, 15);
-        Cursor res =  db.rawQuery("SELECT * FROM Progress P WHERE " +
-                "Name=\"" + nutrientName + "\" AND Date=\"" + date + "\"", null);
+        String date = df.format(Calendar.getInstance().getTime()).substring(0, 16);
+        Cursor res =  db.query("Progress", new String[]{"Amount"}, "Name = ?", new String[]{nutrientName},
+                null, null, null);
         int progress = 0;
-        if (res.getCount() > 0) {
+        res.moveToFirst();
+
+        if (res.isAfterLast() == false) {
             progress = res.getInt(res.getColumnIndex(COLUMN_AMOUNT));
         }
+
+        res.close();
         return progress;
     }
 
@@ -172,6 +184,7 @@ public class AppDatabase extends SQLiteOpenHelper {
             res.moveToNext();
         }
 
+        res.close();
         return list;
     }
 
@@ -191,6 +204,31 @@ public class AppDatabase extends SQLiteOpenHelper {
             res.moveToNext();
         }
 
+        res.close();
+        return list;
+    }
+
+    public ArrayList<Record> getAllRecords(String date) {
+        ArrayList<Record> list = new ArrayList<Record>();
+
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor res =  db.query("FoodRecord", new String[]{"FoodId", "Date", "Time"}, "Date = ?",
+                new String[]{date}, null, null, null);
+        res.moveToFirst();
+
+
+        while(res.isAfterLast() == false) {
+            String fullDateTime = res.getString(res.getColumnIndex("Date")) +
+                    res.getString(res.getColumnIndex("Time"));
+            int id = res.getInt(res.getColumnIndex("FoodId"));
+            System.out.println(id);
+            Record rec = new Record(id, fullDateTime);
+            list.add(rec);
+
+            res.moveToNext();
+        }
+        res.close();
         return list;
     }
 
@@ -210,12 +248,8 @@ public class AppDatabase extends SQLiteOpenHelper {
         contentValues.put("NutrientName", nutrientName);
         contentValues.put("Amount", amount);
         contentValues.put("Unit", unit);
-        long inserted = db.insertWithOnConflict("FoodNutrientPair", null,
-                contentValues, SQLiteDatabase.CONFLICT_IGNORE);
-        if (inserted == -1) {
-            db.update("FoodNutrientPair", contentValues, "FoodId = ?",
-                    new String[]{"" + foodId});
-        }
+        db.insertWithOnConflict("FoodNutrientPair", null,
+                contentValues, SQLiteDatabase.CONFLICT_REPLACE);
         return true;
     }
 
@@ -233,7 +267,8 @@ public class AppDatabase extends SQLiteOpenHelper {
 
     public String getFoodName(int foodId) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "SELECT F.name from Foods F", null );
+        Cursor res =  db.query("Foods", new String[]{"Name"}, "Id = ?", new String[]{"" + foodId},
+                null, null, null);
         res.moveToFirst();
 
         String result = "Error";
@@ -243,6 +278,7 @@ public class AppDatabase extends SQLiteOpenHelper {
             res.moveToNext();
         }
 
+        res.close();
         return result;
     }
 
@@ -263,6 +299,7 @@ public class AppDatabase extends SQLiteOpenHelper {
             foodNutrients.add(result);
             res.moveToNext();
         }
+        res.close();
 
         return foodNutrients;
     }
@@ -289,7 +326,9 @@ public class AppDatabase extends SQLiteOpenHelper {
                     new Pair<String, Pair<Double,Integer>>(ingredientName, amount_unit);
             foodIngredients.add(result);
             res.moveToNext();
+            res2.close();
         }
+        res.close();
 
         return foodIngredients;
     }
@@ -306,6 +345,7 @@ public class AppDatabase extends SQLiteOpenHelper {
             ingredients.add(result);
             res.moveToNext();
         }
+        res.close();
         return ingredients;
     }
 
@@ -321,6 +361,7 @@ public class AppDatabase extends SQLiteOpenHelper {
             result = res.getInt(res.getColumnIndex("Units"));
             res.moveToNext();
         }
+        res.close();
 
         return result;
     }
@@ -333,12 +374,14 @@ public class AppDatabase extends SQLiteOpenHelper {
         if (res.getCount() > 0) {
             return false;
         }
+        res.close();
 
         db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("IngredientName", name);
         contentValues.put("Units", unit);
         db.insert("Ingredients", null, contentValues);
+
         return true;
     }
 
@@ -354,6 +397,69 @@ public class AppDatabase extends SQLiteOpenHelper {
                     new String[]{"" + foodId});
         }
         return true;
+    }
+
+    public void insertNutrientProgress(String name, int amount) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues c = new ContentValues();
+        c.put("Name", name);
+        c.put("Amount", amount);
+        db.insert("Progress", null, c);
+    }
+
+    public void calculateProgress() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("Progress", "", null);
+
+        int hashmap[] = new int[this.getMaxId()+1];
+
+        db = this.getReadableDatabase();
+        DateFormat df = new SimpleDateFormat("EEE, d MMM yyyy, HH:mm");
+        String date = df.format(Calendar.getInstance().getTime()).substring(0, 16);
+        Cursor res =  db.query("FoodRecord", new String[]{"FoodId"}, "Date = ?",
+                new String[]{date}, null, null, null);
+        res.moveToFirst();
+        int result;
+
+        while(res.isAfterLast() == false) {
+            result = res.getInt(res.getColumnIndex("FoodId"));
+            hashmap[result] = hashmap[result] + 1;
+            res.moveToNext();
+        }
+
+        HashMap<String, Integer> nv = new HashMap<String, Integer>();
+        for (int i = 0; i < this.getMaxId(); i++) {
+            ArrayList<Pair<String, Pair<Integer, Integer>>> foodNutrients =
+                    new ArrayList<Pair<String, Pair<Integer,Integer>>>();
+            if (hashmap[i] > 0) {
+                foodNutrients = getFoodNutrients(i);
+                for (int j = 0; j < foodNutrients.size(); j++) {
+                    Pair<String, Pair<Integer, Integer>> old = foodNutrients.get(j);
+
+                    Pair<String, Pair<Integer, Integer>> newNutrient = new Pair<String, Pair<Integer, Integer>>(old.first,
+                            new Pair<Integer, Integer>(old.second.first*hashmap[i], old.second.second));
+                    foodNutrients.set(j, newNutrient);
+                }
+            }
+
+            for (Pair<String, Pair<Integer, Integer>> n : foodNutrients) {
+                if (nv.containsKey(n.first)) {
+                    int old = nv.get(n.first);
+                    nv.put(n.first, old + n.second.first);
+                } else {
+                    nv.put(n.first, n.second.first);
+                }
+            }
+        }
+
+        db = this.getWritableDatabase();
+        for (String k : nv.keySet()) {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("Name", k);
+            contentValues.put("Amount", nv.get(k));
+            db.insert("Progress", null, contentValues);
+        }
+        res.close();
     }
 
 
