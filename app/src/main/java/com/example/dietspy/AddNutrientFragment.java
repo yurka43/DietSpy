@@ -1,5 +1,7 @@
 package com.example.dietspy;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -53,9 +55,34 @@ public class AddNutrientFragment extends Fragment {
 
             public void onClick(View v) {
                 String name = ((EditText) container.findViewById(R.id.nutrient_field)).getText().toString();
+                if (name.equals("")) {
+                    new AlertDialog.Builder(getContext())
+                            .setTitle("Warning")
+                            .setMessage("Do not leave empty name")
+                            .setCancelable(true)
+                            .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            }).show();
+                    return;
+                }
                 int unitChoice = units.getSelectedItemPosition();
                 int flag = dropDown.getSelectedItemPosition();
-                double target_value = Double.parseDouble(((EditText) container.findViewById(R.id.target_field)).getText().toString());
+                String field_value = ((EditText) container.findViewById(R.id.target_field)).getText().toString();
+                if (field_value.equals("")) {
+                    new AlertDialog.Builder(getContext())
+                            .setTitle("Warning")
+                            .setMessage("Do not leave empty amount")
+                            .setCancelable(true)
+                            .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            }).show();
+                    return;
+                }
+                double target_value = Double.parseDouble(field_value);
                 dataStorage.insertNutrient(name, target_value, flag, unitChoice);
 
                 Fragment fragment = new MainFragment();

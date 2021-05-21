@@ -111,9 +111,15 @@ public class AppDatabase extends SQLiteOpenHelper {
         return ingrPlans;
     }
 
+    public void deletePlan(String ingredientName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("ShoppingList", "IngredientName = ?", new String[]{ingredientName});
+    }
+
     public double getPlannedAmount(String ingredientName) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res = db.query("ShoppingList", new String[]{"Amount"}, "IngredientName = ?", new String[]{ingredientName},
+        Cursor res = db.query("ShoppingList", new String[]{"Amount"},
+                "IngredientName = ?", new String[]{ingredientName},
                 null, null, null);
         res.moveToFirst();
         double amount = 0;
