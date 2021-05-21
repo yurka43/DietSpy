@@ -1,6 +1,8 @@
 package com.example.dietspy;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +10,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 
 import static com.example.dietspy.MainActivity.dataStorage;
@@ -31,12 +35,21 @@ public class NutrientAdapter extends ArrayAdapter<Nutrient> {
         ProgressBar progressBar = row.findViewById(R.id.progressBar);
         Nutrient curNutrient = nutrients.get(position);
 
-        int progressAmount = dataStorage.getNutrientProgressToday(curNutrient.getName());
-        double normalizedAmount = progressAmount / Math.pow(10.0, 3.0 * ((double) curNutrient.getUnitInt()));
+        double normalizedAmount = dataStorage.getNutrientProgressToday(curNutrient.getName(), curNutrient.getUnitInt());
 
         row_title.setText(curNutrient.getName());
+        BigDecimal bd = new BigDecimal(normalizedAmount);
+        bd = bd.round(new MathContext(6));
+        normalizedAmount = bd.doubleValue();
         progressText.setText("" + normalizedAmount + "/" + curNutrient.getTarget() + curNutrient.getUnits());
-        progressBar.setProgress((int) (normalizedAmount/curNutrient.getTarget()), true);
+        int progress = (int) (normalizedAmount/curNutrient.getTarget() * 100.0);
+        if (progress > 100 && curNutrient.getFlag() == 1) {
+            progressBar.setProgressTintList(ColorStateList.valueOf(Color.RED));
+        } else if (progress < 100 && curNutrient.getFlag() == 0) {
+            progressBar.setProgressTintList(ColorStateList.valueOf(Color.YELLOW));
+        }
+        progressBar.setProgress(progress, true);
+
         return row;
     }
 }

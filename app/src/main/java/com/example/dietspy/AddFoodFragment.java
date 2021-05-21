@@ -30,7 +30,7 @@ public class AddFoodFragment extends Fragment {
 
     private static String name;
     private static int foodId;
-    private static ArrayList<Pair<String, Pair<Integer, Integer>>> nutrients;
+    private static ArrayList<Pair<String, Pair<Double, Integer>>> nutrients;
     private static ArrayList<Pair<String, Pair<Double, Integer>>> ingredients;
     private static ArrayList<String> nutrientNames;
     private static ArrayList<String> ingredientNames;
@@ -40,7 +40,7 @@ public class AddFoodFragment extends Fragment {
         this.foodId = dataStorage.getMaxId();
         this.nutrients = dataStorage.getFoodNutrients(foodId);
         this.ingredients = dataStorage.getFoodIngredients(foodId);
-        this.nutrientNames = extractNames(this.nutrients);
+        this.nutrientNames = extractINames(this.nutrients);
         this.ingredientNames = extractINames(this.ingredients);
     }
 
@@ -49,7 +49,7 @@ public class AddFoodFragment extends Fragment {
         this.foodId = dataStorage.getFoodId(name);
         this.nutrients = dataStorage.getFoodNutrients(foodId);
         this.ingredients = dataStorage.getFoodIngredients(foodId);
-        this.nutrientNames = extractNames(this.nutrients);
+        this.nutrientNames = extractINames(this.nutrients);
         this.ingredientNames = extractINames(this.ingredients);
         this.newFood = false;
     }
@@ -59,13 +59,6 @@ public class AddFoodFragment extends Fragment {
         return fragment;
     }
 
-    public static ArrayList<String> extractNames(ArrayList<Pair<String, Pair<Integer, Integer>>> nutrientList) {
-        ArrayList<String> names = new ArrayList<String>();
-        for (Pair<String, Pair<Integer, Integer>> i : nutrientList) {
-            names.add(i.first);
-        }
-        return names;
-    }
     public static ArrayList<String> extractINames(ArrayList<Pair<String, Pair<Double, Integer>>> nutrientList) {
         ArrayList<String> names = new ArrayList<String>();
         for (Pair<String, Pair<Double, Integer>> i : nutrientList) {
@@ -180,7 +173,7 @@ public class AddFoodFragment extends Fragment {
                         dataStorage.insertFood(foodId, foodName);
                     }
 
-                    for (Pair<String, Pair<Integer, Integer>> n  : nutrients) {
+                    for (Pair<String, Pair<Double, Integer>> n  : nutrients) {
                         dataStorage.insertFoodNutrient(foodId, n.first, n.second.first, n.second.second);
                     }
 
@@ -211,20 +204,20 @@ public class AddFoodFragment extends Fragment {
     }
 
 
-    public boolean addNutrient(Pair<String, Pair<Integer, Integer>> nutrient) {
-        for (Pair<String, Pair<Integer, Integer>> n : nutrients) {
+    public boolean addNutrient(Pair<String, Pair<Double, Integer>> nutrient) {
+        for (Pair<String, Pair<Double, Integer>> n : nutrients) {
             if (n.first.equals(nutrient.first)) {
                 return false;
             }
         }
         this.nutrients.add(nutrient);
-        this.nutrientNames = extractNames(this.nutrients);
+        this.nutrientNames = extractINames(this.nutrients);
         return true;
     }
 
-    public boolean deleteNutrient(Pair<String, Pair<Integer, Integer>> nutrient) {
+    public boolean deleteNutrient(Pair<String, Pair<Double, Integer>> nutrient) {
         boolean deleted = nutrients.remove(nutrient);
-        this.nutrientNames = extractNames(this.nutrients);
+        this.nutrientNames = extractINames(this.nutrients);
         return deleted;
     }
 

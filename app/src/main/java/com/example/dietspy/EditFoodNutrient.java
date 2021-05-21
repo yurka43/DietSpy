@@ -30,9 +30,9 @@ public class EditFoodNutrient extends Fragment {
 
     private static int foodId;
     private static AddFoodFragment parent;
-    private static Pair<String, Pair<Integer, Integer>> nutrient;
+    private static Pair<String, Pair<Double, Integer>> nutrient;
 
-    public EditFoodNutrient(int foodId, AddFoodFragment parent, Pair<String, Pair<Integer, Integer>> nutrient) {
+    public EditFoodNutrient(int foodId, AddFoodFragment parent, Pair<String, Pair<Double, Integer>> nutrient) {
         this.foodId = foodId;
         this.parent = parent;
         this.nutrient = nutrient;
@@ -82,11 +82,11 @@ public class EditFoodNutrient extends Fragment {
                                 }
                             }).show();
                 } else {
-                    int amount = Integer.parseInt(amountField.getText().toString());
+                    double amount = Double.parseDouble(amountField.getText().toString());
                     int unit = units.getSelectedItemPosition();
-                    System.out.println("Deleted1 " + parent.deleteNutrient(nutrient));
-                    Pair<Integer, Integer> newAmountUnit = new Pair<Integer, Integer>(amount, unit);
-                    nutrient = new Pair<String, Pair<Integer, Integer>>(nutrient.first, newAmountUnit);
+                    Pair<Double, Integer> newAmountUnit = new Pair<Double, Integer>(amount, unit);
+                    parent.deleteNutrient(nutrient);
+                    nutrient = new Pair<String, Pair<Double, Integer>>(nutrient.first, newAmountUnit);
                     parent.addNutrient(nutrient);
                     getParentFragmentManager().popBackStack();
                 }

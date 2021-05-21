@@ -23,15 +23,16 @@ import static com.example.dietspy.MainActivity.dataStorage;
 public class EditNutrientFragment extends Fragment {
 
     private String oldName;
-    private int oldUnit, oldFlag, oldTarget;
-    public EditNutrientFragment(String name, int unit, int flag, int target_value) {
+    private int oldUnit, oldFlag;
+    private double oldTarget;
+    public EditNutrientFragment(String name, int unit, int flag, double target_value) {
         this.oldName = name;
         this.oldUnit = unit;
         this.oldFlag = flag;
         this.oldTarget = target_value;
     }
 
-    public static EditNutrientFragment newInstance(String name, int unit, int flag, int target_value) {
+    public static EditNutrientFragment newInstance(String name, int unit, int flag, double target_value) {
         EditNutrientFragment fragment = new EditNutrientFragment(name, unit, flag, target_value);
         return fragment;
     }
@@ -63,7 +64,7 @@ public class EditNutrientFragment extends Fragment {
         nutrientName.setText(oldName);
 
         EditText nutrientTarget = view.findViewById(R.id.target_edit_field);
-        nutrientTarget.setText((new Integer(oldTarget)).toString());
+        nutrientTarget.setText((new Double(oldTarget)).toString());
 
         Button okButton = view.findViewById(R.id.ok_nutrient_button);
 
@@ -73,7 +74,7 @@ public class EditNutrientFragment extends Fragment {
                 String newName = ((EditText) container.findViewById(R.id.nutrient_edit_field)).getText().toString();
                 int unitChoice = units.getSelectedItemPosition();
                 int flag = dropDown.getSelectedItemPosition();
-                int target_value = Integer.parseInt(((EditText) container.findViewById(R.id.target_edit_field)).getText().toString());
+                double target_value = Double.parseDouble(((EditText) container.findViewById(R.id.target_edit_field)).getText().toString());
                 dataStorage.updateNutrient(oldName, newName, target_value, flag, unitChoice);
 
                 Fragment fragment = new MainFragment();

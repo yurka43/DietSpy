@@ -55,7 +55,7 @@ public class AddNutrientFragment extends Fragment {
                 String name = ((EditText) container.findViewById(R.id.nutrient_field)).getText().toString();
                 int unitChoice = units.getSelectedItemPosition();
                 int flag = dropDown.getSelectedItemPosition();
-                int target_value = Integer.parseInt(((EditText) container.findViewById(R.id.target_field)).getText().toString());
+                double target_value = Double.parseDouble(((EditText) container.findViewById(R.id.target_field)).getText().toString());
                 dataStorage.insertNutrient(name, target_value, flag, unitChoice);
 
                 Fragment fragment = new MainFragment();

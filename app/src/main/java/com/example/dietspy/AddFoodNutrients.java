@@ -93,9 +93,9 @@ public class AddFoodNutrients extends Fragment {
                         return;
                     }
 
-                    int amount = Integer.parseInt(((EditText) container.findViewById(R.id.amount_field)).getText().toString());
-                    Pair<String, Pair<Integer, Integer>> nutrient =
-                            new Pair<String, Pair<Integer, Integer>>(nutrientName, new Pair<Integer,Integer>(amount,unitChoice));
+                    double amount = Double.parseDouble(((EditText) container.findViewById(R.id.amount_field)).getText().toString());
+                    Pair<String, Pair<Double, Integer>> nutrient =
+                            new Pair<String, Pair<Double, Integer>>(nutrientName, new Pair<Double,Integer>(amount,unitChoice));
                     if (!parent.addNutrient(nutrient)) {
                         new AlertDialog.Builder(getContext())
                                 .setTitle("Warning")

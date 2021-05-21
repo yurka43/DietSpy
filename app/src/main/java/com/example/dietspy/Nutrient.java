@@ -3,10 +3,11 @@ package com.example.dietspy;
 public class Nutrient {
 
     private String name;
-    private int target, flag, unitInt;
+    private int flag, unitInt;
+    private double target;
     private Unit unit;
 
-    public Nutrient(String name, int target, int flag, int units) {
+    public Nutrient(String name, double target, int flag, int units) {
         this.name = name;
         this.target = target;
         this.flag = flag;
@@ -18,7 +19,7 @@ public class Nutrient {
         return name;
     }
 
-    public int getTarget() {
+    public double getTarget() {
         return target;
     }
 
