@@ -50,7 +50,10 @@ public class AppDatabase extends SQLiteOpenHelper {
                 "FOREIGN KEY(FoodId) REFERENCES Foods(Id) ON DELETE CASCADE," +
                 "FOREIGN KEY(NutrientName) REFERENCES Nutrients(Name) ON DELETE CASCADE ON UPDATE CASCADE)";
         db.execSQL(query);
-        query = "CREATE TABLE IF NOT EXISTS Ingredients(IngredientName TEXT PRIMARY KEY, Units Integer)";
+        query = "CREATE TABLE IF NOT EXISTS Ingredients(IngredientName TEXT PRIMARY KEY, Units INTEGER)";
+        db.execSQL(query);
+        query = "CREATE TABLE IF NOT EXISTS ShoppingList(IngredientName TEXT PRIMARY KEY, Amount REAL," +
+                "FOREIGN KEY(IngredientName) REFERENCES Ingredients(IngredientName) ON DELETE CASCADE)";
         db.execSQL(query);
         query = "CREATE TABLE IF NOT EXISTS FoodIngredientPair(FoodId INTEGER, IngredientName TEXT UNIQUE, Amount REAL, PRIMARY KEY(FoodId, IngredientName)," +
                 "FOREIGN KEY(FoodId) REFERENCES Foods(Id) ON DELETE CASCADE)";
@@ -64,6 +67,64 @@ public class AppDatabase extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS Nutrients");
         onCreate(db);
+    }
+
+
+    public void addPlanIngredientForFood(String foodName) {
+        int foodId = getFoodId(foodName);
+
+        ArrayList<Pair<String, Pair<Double, Integer>>> foodIngr = getFoodIngredients(foodId);
+
+
+        SQLiteDatabase db = this.getWritableDatabase();;
+        for (Pair<String, Pair<Double, Integer>> ingr : foodIngr) {
+            double amount = getPlannedAmount(ingr.first);
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("IngredientName", ingr.first);
+            contentValues.put("Amount", amount + ingr.second.first);
+            db.insertWithOnConflict("ShoppingList", null,
+                    contentValues, SQLiteDatabase.CONFLICT_REPLACE);
+        }
+    }
+
+    public ArrayList<Pair<String, Pair<Double, Integer>>> getPlans() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res = db.rawQuery("SELECT * FROM ShoppingList S, Ingredients I WHERE " +
+                "I.IngredientName = S.IngredientName", null);
+        res.moveToFirst();
+
+        ArrayList<Pair<String, Pair<Double, Integer>>> ingrPlans =
+                new ArrayList<Pair<String, Pair<Double, Integer>>>();
+
+
+        while(!res.isAfterLast()) {
+            Pair<Double, Integer> amount_unit = new Pair<Double, Integer>(res.getDouble(res.getColumnIndex("Amount")),
+                    res.getInt(res.getColumnIndex("Units")));
+            Pair<String, Pair<Double, Integer>> ingredient =
+            new Pair<String, Pair<Double, Integer>>(res.getString(res.getColumnIndex("IngredientName")),
+                    amount_unit);
+
+            ingrPlans.add(ingredient);
+            res.moveToNext();
+        }
+
+        return ingrPlans;
+    }
+
+    public double getPlannedAmount(String ingredientName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res = db.query("ShoppingList", new String[]{"Amount"}, "IngredientName = ?", new String[]{ingredientName},
+                null, null, null);
+        res.moveToFirst();
+        double amount = 0;
+
+        while (res.isAfterLast() == false) {
+            amount = res.getDouble(res.getColumnIndex("Amount"));
+
+            res.moveToNext();
+        }
+
+        return amount;
     }
 
     public boolean insertNutrient (String name, double target, int flag, int units) {
@@ -392,11 +453,7 @@ public class AppDatabase extends SQLiteOpenHelper {
         contentValues.put("FoodId", foodId);
         contentValues.put("IngredientName", ingredientName);
         contentValues.put("Amount", amount);
-        long inserted = db.insertWithOnConflict("FoodIngredientPair", null, contentValues, SQLiteDatabase.CONFLICT_IGNORE);
-        if (inserted == -1) {
-            db.update("FoodIngredientPair", contentValues, "FoodId = ?",
-                    new String[]{"" + foodId});
-        }
+        db.insertWithOnConflict("FoodIngredientPair", null, contentValues, SQLiteDatabase.CONFLICT_REPLACE);
         return true;
     }
 
@@ -463,6 +520,4 @@ public class AppDatabase extends SQLiteOpenHelper {
         }
         res.close();
     }
-
-
 }

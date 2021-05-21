@@ -21,7 +21,7 @@
         tools:layout="@layout/fragment_record" />
     <fragment
         android:id="@+id/fourthFragment"
-        android:name="com.example.dietspy.FourthFragment"
+        android:name="com.example.dietspy.PlanFragment"
         android:label="fragment_fourth"
-        tools:layout="@layout/fragment_fourth" />
+        tools:layout="@layout/create_plan" />
 </navigation>
